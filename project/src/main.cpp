@@ -20,7 +20,7 @@
 
 // Project includes
 #include "Timer.h"
-#include "HardwareRenderer.h"
+#include "Renderer.h"
 #if defined( _DEBUG )
 #	include "LeakDetector.h"
 #endif
@@ -37,6 +37,23 @@ void SetCoutColor( int color )
 {
 	HANDLE consoleHandle{ GetStdHandle( STD_OUTPUT_HANDLE ) };
 	SetConsoleTextAttribute( consoleHandle, color );
+}
+
+void DisplayHelp()
+{
+	std::cout << "[F1]: Toggle Hardware/Software Rendering\n"
+			  << "[F2]: Toggle Vehicle Rotation\n"
+			  << "[F10]: Toggle Uniform Clear Color\n"
+			  << "[F11]: Toggle FPS\n"
+			  << "[F12]: Show Help (This)\n\n"
+
+			  << "[F3]: Toggle Fire Effect (Hardware Only)\n"
+			  << "[F4]: Cycle Sampling Method (Hardware Only)\n\n"
+
+			  << "[F5]: Cycle Shading Mode(Software Only)\n"
+			  << "[F6]: Toggle Normal Map(Software Only)\n"
+			  << "[F7]: Toggle Depth Buffer Visualization (Software Only)\n"
+			  << "[F8]: Toggle Bounding Box Visualization (Software Only)\n";
 }
 
 int main( int argc, char* args[] )
@@ -73,7 +90,7 @@ int main( int argc, char* args[] )
 	Renderer renderer{ pWindow };
 
 	// Initialize scene
-	std::vector<std::unique_ptr<Scene>> scenePtrs{};
+	std::vector<std::unique_ptr<Scene>> scenePtrs{}; // allows for multiple scenes in a project
 	scenePtrs.push_back( std::make_unique<VehicleScene>() );
 	error::utils::HandleThrowingFunction( [&]() {
 		for ( auto& pScene : scenePtrs )
@@ -84,10 +101,13 @@ int main( int argc, char* args[] )
 	// TODO:Add scene switching
 	size_t sceneIdx{ 0 };
 
+	bool displayFPS{ true };
+
 	// Start loop
 	timer.Start();
 	float printTimer = 0.f;
 	bool isLooping = true;
+	DisplayHelp();
 	while ( isLooping )
 	{
 		//--------- Get input events ---------
@@ -100,8 +120,25 @@ int main( int argc, char* args[] )
 				isLooping = false;
 				break;
 			case SDL_KEYUP:
-				// Test for a key
-				// if (e.key.keysym.scancode == SDL_SCANCODE_X)
+				renderer.HandleKeyUp( e.key );
+				scenePtrs[sceneIdx]->HandleKeyUp( e.key );
+				if ( e.key.keysym.scancode == SDL_SCANCODE_F11 )
+				{
+					displayFPS = !displayFPS;
+					if ( displayFPS )
+					{
+						std::cout << "Displaying FPS\n";
+					}
+					else
+					{
+						std::cout << "Not displaying FPS\n";
+					}
+				}
+
+				if ( e.key.keysym.scancode == SDL_SCANCODE_F12 )
+				{
+					DisplayHelp();
+				}
 				break;
 			default:;
 			}
@@ -117,7 +154,7 @@ int main( int argc, char* args[] )
 		//--------- Timer ----------
 		timer.Update();
 		printTimer += timer.GetElapsed();
-		if ( printTimer >= 1.f )
+		if ( printTimer >= 1.f && displayFPS )
 		{
 			printTimer = 0.f;
 			std::cout << "dFPS: " << timer.GetdFPS() << std::endl;

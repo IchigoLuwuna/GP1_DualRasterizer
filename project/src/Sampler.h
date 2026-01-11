@@ -16,7 +16,6 @@ public:
 
 	void Cycle();
 
-private:
 	enum class FilterMode
 	{
 		point,
@@ -25,6 +24,7 @@ private:
 		count,
 	};
 
+private:
 	// SOFTWARE RESOURCES
 	FilterMode m_CurrentFilterMode{};
 	//

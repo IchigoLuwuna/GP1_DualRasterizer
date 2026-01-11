@@ -1,5 +1,6 @@
 #include <SDL_keyboard.h>
 #include <d3dx11effect.h>
+#include <bit>
 #include "Scene.h"
 #include "Error.h"
 #include "Utils.h"
@@ -21,27 +22,6 @@ void Scene::Update( Timer* pTimer )
 		transparentMesh.SetWorldViewProjection( m_Camera.GetViewMatrix(), m_Camera.GetProjectionMatrix() );
 	}
 	//
-
-	// Handle input
-	const Uint8* pKeyboardState{ SDL_GetKeyboardState( nullptr ) };
-	if ( pKeyboardState[SDL_SCANCODE_F2] && !m_F2Held )
-	{
-		m_F2Held = true;
-		for ( auto& mesh : m_Meshes )
-		{
-			mesh.CycleFilteringMode();
-		}
-
-		for ( auto& transparentMesh : m_TransparentMeshes )
-		{
-			transparentMesh.CycleFilteringMode();
-		}
-	}
-	if ( !pKeyboardState[SDL_SCANCODE_F2] && m_F2Held )
-	{
-		m_F2Held = false;
-	}
-	//
 }
 
 void Scene::Draw( ID3D11DeviceContext* pDeviceContext )
@@ -58,9 +38,12 @@ void Scene::Draw( ID3D11DeviceContext* pDeviceContext )
 	}
 
 	// Draw transparent meshes
-	for ( auto& transparentMesh : m_TransparentMeshes )
+	if ( m_EnableTransparentMeshes )
 	{
-		transparentMesh.Draw( pDeviceContext );
+		for ( auto& transparentMesh : m_TransparentMeshes )
+		{
+			transparentMesh.Draw( pDeviceContext );
+		}
 	}
 }
 
@@ -79,14 +62,93 @@ Vector3 Scene::GetLightDirection() const
 	return { 0.577, -0.577, 0.577 };
 }
 
+void Scene::CycleFilteringMode()
+{
+	for ( auto& mesh : m_Meshes )
+	{
+		mesh.CycleFilteringMode();
+	}
+	for ( auto& mesh : m_TransparentMeshes )
+	{
+		mesh.CycleFilteringMode();
+	}
+
+	IncrementFilterMode();
+
+	switch ( m_CurrentFilterMode )
+	{
+	case Sampler::FilterMode::point:
+		std::cout << "Set sampling mode to point\n";
+		break;
+
+	case Sampler::FilterMode::linear:
+		std::cout << "Set sampling mode to linear\n";
+		break;
+
+	case Sampler::FilterMode::anisotropic:
+		std::cout << "Set sampling mode to anisotropic\n";
+		break;
+
+	default:
+		break;
+	}
+}
+
+void Scene::IncrementFilterMode()
+{
+	m_CurrentFilterMode = std::bit_cast<Sampler::FilterMode, int>(
+		( std::bit_cast<int, Sampler::FilterMode>( m_CurrentFilterMode ) + 1 ) %
+		std::bit_cast<int, Sampler::FilterMode>( Sampler::FilterMode::count ) );
+}
+
 void VehicleScene::Update( Timer* pTimer )
 {
 	const Matrix rotation{ Matrix::CreateRotationY( pTimer->GetElapsed() * 0.25f * PI ) };
 
-	// m_Meshes[0].ApplyMatrix( rotation );
-	// m_TransparentMeshes[0].ApplyMatrix( rotation );
+	if ( m_RotateVehicle )
+	{
+		m_Meshes[0].ApplyMatrix( rotation );
+		m_TransparentMeshes[0].ApplyMatrix( rotation );
+	}
 
 	Scene::Update( pTimer );
+}
+
+void VehicleScene::HandleKeyUp( SDL_KeyboardEvent key )
+{
+	switch ( key.keysym.scancode )
+	{
+	case SDL_SCANCODE_F2:
+		m_RotateVehicle = !m_RotateVehicle;
+		if ( m_RotateVehicle )
+		{
+			std::cout << "Enabled rotation\n";
+		}
+		else
+		{
+			std::cout << "Disabled rotation\n";
+		}
+		break;
+
+	case SDL_SCANCODE_F3:
+		m_EnableTransparentMeshes = !m_EnableTransparentMeshes;
+		if ( m_EnableTransparentMeshes )
+		{
+			std::cout << "Enabled transparent meshes\n";
+		}
+		else
+		{
+			std::cout << "Disabled transparent meshes\n";
+		}
+		break;
+
+	case SDL_SCANCODE_F4:
+		CycleFilteringMode();
+		break;
+
+	default:
+		break;
+	}
 }
 
 void VehicleScene::Initialize( ID3D11Device* pDevice, float aspectRatio )

@@ -176,9 +176,11 @@ struct TriangleOut
 		: v0{ v0 }
 		, v1{ v1 }
 		, v2{ v2 }
-		, normal{
-			Vector3::Cross( Vector3( v0.position, v2.position ), Vector3( v0.position, v1.position ) ).Normalized()
-		}
+		, normal{ Vector3::Cross( Vector3( { v0.position.x, v0.position.y, v0.position.w },
+										   { v2.position.x, v2.position.y, v2.position.w } ),
+								  Vector3( { v0.position.x, v0.position.y, v0.position.w },
+										   { v1.position.x, v1.position.y, v1.position.w } ) )
+					  .Normalized() }
 	{
 	}
 

@@ -30,6 +30,8 @@ public:
 	Renderer& operator=( Renderer&& ) noexcept = delete;
 
 	void Update( const Timer& timer );
+	void HandleKeyUp( SDL_KeyboardEvent key );
+
 	void Render( Scene* pScene );
 	void RenderHW( Scene* pScene );
 	void RenderSW( Scene* pScene );
@@ -41,7 +43,8 @@ private:
 	int m_Height{};
 
 	bool m_IsInitialized{ false };
-	bool m_UseHardware{ false };
+	bool m_UseHardware{ true };
+	bool m_UseUniformClearColor{ false };
 
 	// SDL: NON-OWNING
 	SDL_Window* m_pWindow{};
@@ -71,6 +74,7 @@ private:
 	SDL_Surface* m_pFrontBuffer{ nullptr };
 	SDL_Surface* m_pBackBuffer{ nullptr };
 	uint32_t* m_pBackBufferPixels{};
+	//
 
 	std::vector<float> m_DepthBufferPixels{};
 	std::vector<std::pair<bool, VertexOut>> m_PixelAttributeBuffer{};
@@ -81,10 +85,7 @@ private:
 
 	bool m_ShowDepthBuffer{};
 	bool m_UseNormalMap{ true };
-
-	bool m_F4Held{};
-	bool m_F6Held{};
-	bool m_F7Held{};
+	bool m_ShowBoundingBox{ false };
 
 	void Project( const std::vector<Vertex>& verticesIn,
 				  std::vector<VertexOut>& verticesOut,
@@ -96,6 +97,9 @@ private:
 
 	bool IsInPixel( const TriangleOut& triangle, int px, int py, Vector3& baryCentricPosition ) noexcept;
 	bool IsCullable( const TriangleOut& triangle ) noexcept;
+
+	void CycleLightingMode();
+	void IncrementLightingMode();
 	//
 };
 } // namespace dae

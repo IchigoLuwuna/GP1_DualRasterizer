@@ -119,17 +119,14 @@ void Sampler::Update()
 	switch ( m_CurrentFilterMode )
 	{
 	case FilterMode::point:
-		std::cout << "Set filter mode to Point\n";
 		m_pSamplerVariable->SetSampler( 0, m_pPointSampler );
 		break;
 
 	case FilterMode::linear:
-		std::cout << "Set filter mode to Linear\n";
 		m_pSamplerVariable->SetSampler( 0, m_pLinearSampler );
 		break;
 
 	case FilterMode::anisotropic:
-		std::cout << "Set filter mode to Anisotropic\n";
 		m_pSamplerVariable->SetSampler( 0, m_pAnisotropicSampler );
 		break;
 
