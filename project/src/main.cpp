@@ -75,12 +75,8 @@ int main( int argc, char* args[] )
 
 	const SDL_WindowFlags windowFlags{};
 
-	SDL_Window* pWindow = SDL_CreateWindow( "DirectX - ***Insert Name/Class***",
-											SDL_WINDOWPOS_UNDEFINED,
-											SDL_WINDOWPOS_UNDEFINED,
-											width,
-											height,
-											windowFlags );
+	SDL_Window* pWindow = SDL_CreateWindow(
+		"DirectX - Luna Pype/GD11", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, windowFlags );
 
 	if ( !pWindow )
 		return 1;

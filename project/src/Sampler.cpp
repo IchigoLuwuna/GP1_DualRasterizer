@@ -86,11 +86,6 @@ Sampler& Sampler::operator=( Sampler&& rhs )
 
 Sampler::~Sampler()
 {
-	if ( m_pSamplerVariable )
-	{
-		m_pSamplerVariable->Release();
-	}
-
 	if ( m_pPointSampler )
 	{
 		m_pPointSampler->Release();

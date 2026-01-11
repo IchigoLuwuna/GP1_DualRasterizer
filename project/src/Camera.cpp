@@ -68,7 +68,7 @@ void Camera::Update( Timer* pTimer )
 	constexpr float sensitivity{ 0.25f };
 
 	const float deltaTime = pTimer->GetElapsed();
-	float speedMultiplier{ 1.f };
+	float speedMultiplier{ 10.f };
 
 	// Keyboard Input
 	const uint8_t* pKeyboardState{ SDL_GetKeyboardState( nullptr ) };
