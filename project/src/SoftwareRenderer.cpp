@@ -217,20 +217,31 @@ void SoftwareRenderer::RasterizeMesh( const Mesh& mesh, const Scene* pScene, con
 			};
 
 			Vector4 interpolatedPosition{};
+			Vector3 interpolatedWorldPosition{};
 			Vector3 interpolatedNormal{};
 			Vector3 interpolatedTangent{};
 
 			// Interpolate
-			interpolatedPosition.x = projectedTriangle.v0.worldPosition.x * baryCentricPosition.x +
-									 projectedTriangle.v1.worldPosition.x * baryCentricPosition.y +
-									 projectedTriangle.v2.worldPosition.x * baryCentricPosition.z;
-			interpolatedPosition.y = projectedTriangle.v0.worldPosition.y * baryCentricPosition.x +
-									 projectedTriangle.v1.worldPosition.y * baryCentricPosition.y +
-									 projectedTriangle.v2.worldPosition.y * baryCentricPosition.z;
-			interpolatedPosition.w = projectedTriangle.v0.worldPosition.z * baryCentricPosition.x +
-									 projectedTriangle.v1.worldPosition.z * baryCentricPosition.y +
-									 projectedTriangle.v2.worldPosition.z * baryCentricPosition.z;
+			interpolatedPosition.x = projectedTriangle.v0.position.x * baryCentricPosition.x +
+									 projectedTriangle.v1.position.x * baryCentricPosition.y +
+									 projectedTriangle.v2.position.x * baryCentricPosition.z;
+			interpolatedPosition.y = projectedTriangle.v0.position.y * baryCentricPosition.x +
+									 projectedTriangle.v1.position.y * baryCentricPosition.y +
+									 projectedTriangle.v2.position.y * baryCentricPosition.z;
+			interpolatedPosition.w = projectedTriangle.v0.position.z * baryCentricPosition.x +
+									 projectedTriangle.v1.position.z * baryCentricPosition.y +
+									 projectedTriangle.v2.position.z * baryCentricPosition.z;
 			interpolatedPosition.z = interpolatedDepth;
+
+			interpolatedWorldPosition.x = projectedTriangle.v0.worldPosition.x * baryCentricPosition.x +
+										  projectedTriangle.v1.worldPosition.x * baryCentricPosition.y +
+										  projectedTriangle.v2.worldPosition.x * baryCentricPosition.z;
+			interpolatedWorldPosition.y = projectedTriangle.v0.worldPosition.y * baryCentricPosition.x +
+										  projectedTriangle.v1.worldPosition.y * baryCentricPosition.y +
+										  projectedTriangle.v2.worldPosition.y * baryCentricPosition.z;
+			interpolatedWorldPosition.z = projectedTriangle.v0.worldPosition.z * baryCentricPosition.x +
+										  projectedTriangle.v1.worldPosition.z * baryCentricPosition.y +
+										  projectedTriangle.v2.worldPosition.z * baryCentricPosition.z;
 
 			const ColorRGB interpolatedColor{
 				( projectedTriangle.v0.color / projectedTriangle.v0.position.w * baryCentricPosition.x +
@@ -268,9 +279,8 @@ void SoftwareRenderer::RasterizeMesh( const Mesh& mesh, const Scene* pScene, con
 									projectedTriangle.v2.tangent.z * baryCentricPosition.z;
 			interpolatedTangent.Normalize();
 
-			VertexOut interpolatedVertex{
-				{}, interpolatedPosition, interpolatedColor, interpolatedUV, interpolatedNormal, interpolatedTangent
-			};
+			VertexOut interpolatedVertex{ interpolatedPosition, interpolatedWorldPosition, interpolatedColor,
+										  interpolatedUV,		interpolatedNormal,		   interpolatedTangent };
 
 			m_PixelAttributeBuffer[bufferIndex].first = true;
 			m_PixelAttributeBuffer[bufferIndex].second = interpolatedVertex;
@@ -324,7 +334,7 @@ void SoftwareRenderer::RasterizeMesh( const Mesh& mesh, const Scene* pScene, con
 			const ColorRGB finalColor{ GetPixelColor( m_PixelAttributeBuffer[bufferIndex].second,
 													  mesh.GetDiffuseMap(),
 													  mesh.GetNormalMap(),
-													  mesh.GetDiffuseMap(),
+													  mesh.GetSpecularMap(),
 													  mesh.GetGlossMap(),
 													  camera,
 													  pScene->GetLightDirection(),

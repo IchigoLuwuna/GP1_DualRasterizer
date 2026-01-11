@@ -57,6 +57,9 @@ Texture::Texture( Texture&& rhs )
 
 	m_pResourceView = rhs.m_pResourceView;
 	rhs.m_pResourceView = nullptr;
+
+	m_pSurface = rhs.m_pSurface;
+	rhs.m_pSurface = nullptr;
 }
 
 Texture& Texture::operator=( Texture&& rhs )
@@ -71,6 +74,9 @@ Texture& Texture::operator=( Texture&& rhs )
 
 	m_pResourceView = rhs.m_pResourceView;
 	rhs.m_pResourceView = nullptr;
+
+	m_pSurface = rhs.m_pSurface;
+	rhs.m_pSurface = nullptr;
 
 	return *this;
 }

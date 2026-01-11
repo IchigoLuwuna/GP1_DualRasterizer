@@ -21,7 +21,6 @@
 // Project includes
 #include "Timer.h"
 #include "HardwareRenderer.h"
-#include "SoftwareRenderer.h"
 #if defined( _DEBUG )
 #	include "LeakDetector.h"
 #endif
@@ -71,8 +70,7 @@ int main( int argc, char* args[] )
 
 	// Initialize "framework"
 	Timer timer{};
-	HardwareRenderer hardwareRenderer{ pWindow };
-	SoftwareRenderer softwareRenderer{ pWindow };
+	Renderer renderer{ pWindow };
 
 	// Initialize scene
 	std::vector<std::unique_ptr<Scene>> scenePtrs{};
@@ -80,7 +78,7 @@ int main( int argc, char* args[] )
 	error::utils::HandleThrowingFunction( [&]() {
 		for ( auto& pScene : scenePtrs )
 		{
-			hardwareRenderer.InitScene( pScene.get() );
+			renderer.InitScene( pScene.get() );
 		}
 	} );
 	// TODO:Add scene switching
@@ -111,12 +109,10 @@ int main( int argc, char* args[] )
 
 		//--------- Update ---------
 		// hardwareRenderer.Update( timer );
-		softwareRenderer.Update( timer );
 		scenePtrs[sceneIdx]->Update( &timer );
 
 		//--------- Render ---------
-		// hardwareRenderer.Render( scenePtrs[sceneIdx].get() );
-		softwareRenderer.Render( scenePtrs[sceneIdx].get() );
+		renderer.Render( scenePtrs[sceneIdx].get() );
 
 		//--------- Timer ----------
 		timer.Update();

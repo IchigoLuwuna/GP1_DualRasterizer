@@ -1,4 +1,5 @@
 #include "Shading.h"
+#include <iostream>
 
 // Why does Michael Soft III do this to me?
 #undef max
@@ -22,8 +23,6 @@ ColorRGB GetPixelColor( const VertexOut& pixelVertex,
 		return diffuseColor;
 	}
 
-	const Vector3 pixelPos{ pixelVertex.position.x, pixelVertex.position.y, pixelVertex.position.w };
-
 	Vector3 sampledNormal{};
 	if ( useNormalMap )
 	{
@@ -43,7 +42,7 @@ ColorRGB GetPixelColor( const VertexOut& pixelVertex,
 	const ColorRGB sampledSpecularity{ specularMap.Sample( pixelVertex.uv ) };
 	const float sampledGloss{ glossMap.Sample( pixelVertex.uv ).r }; // Assuming map is greyscale
 
-	const Vector3 toCameraDir{ Vector3( pixelPos, camera.GetPosition() ).Normalized() };
+	const Vector3 toCameraDir{ Vector3( pixelVertex.worldPosition, camera.GetPosition() ).Normalized() };
 
 	ColorRGB finalColor{};
 
@@ -53,7 +52,6 @@ ColorRGB GetPixelColor( const VertexOut& pixelVertex,
 	constexpr ColorRGB ambientLight{ 0.03f, 0.03f, 0.03f };
 
 	const float observedArea{ lightUtils::GetObservedArea( lightDirection, sampledNormal ) };
-	const float radiance{ 7.f };
 	const ColorRGB lambertDiffuse{ ( diffuseColor * diffuseReflectance ) / PI };
 	const ColorRGB phongSpecular{ lightUtils::GetPhong(
 		sampledSpecularity, sampledGloss * shininess, lightDirection, toCameraDir, sampledNormal ) };
@@ -99,11 +97,9 @@ ColorRGB GetPhong( ColorRGB specularReflectance,
 				   const Vector3& toCameraDir,
 				   const Vector3& normal )
 {
-	const Vector3 reflect{ Vector3::Reflect( lightIncomingDir, normal ) };
-	const float dot{ std::max( Vector3::Dot( reflect, toCameraDir ), 0.f ) };
-	const ColorRGB phongReflection{ specularReflectance * std::pow( dot, phongExponent ) };
-
-	return phongReflection;
+	const Vector3 reflectLight{ Vector3::Reflect( -lightIncomingDir, normal ) };
+	const float closingFactor{ std::max( Vector3::Dot( reflectLight, -toCameraDir ), 0.f ) };
+	return specularReflectance * pow( closingFactor, phongExponent );
 }
 } // namespace lightUtils
 } // namespace dae
