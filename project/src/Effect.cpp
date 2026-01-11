@@ -1,6 +1,7 @@
 #include <sstream>
 #include <array>
 #include <d3dx11effect.h>
+#include <d3dcompiler.h>
 #include "Effect.h"
 #include "Error.h"
 
